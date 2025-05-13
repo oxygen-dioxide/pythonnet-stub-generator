@@ -24,7 +24,7 @@ namespace PythonNetStubGenerator
             // pick a dll and load
             foreach (var targetAssemblyPath in targetAssemblyPaths)
             {
-                var assemblyToStub = Assembly.LoadFrom(targetAssemblyPath.FullName);
+                var assemblyToStub = AssemblyHelper.LoadFromPath(targetAssemblyPath.FullName);
                 SearchPaths.Add(targetAssemblyPath.Directory);
                 
                 if (searchPaths != null)
@@ -110,7 +110,10 @@ namespace PythonNetStubGenerator
             foreach (var searchPath in SearchPaths)
             {
                 var assemblyPath = Path.Combine(searchPath.FullName, assemblyToResolve);
-                if (File.Exists(assemblyPath)) return Assembly.LoadFrom(assemblyPath);
+                if (File.Exists(assemblyPath))
+                {
+                    return AssemblyHelper.LoadFromPath(assemblyPath);
+                }
             }
 
             return null;
