@@ -10,7 +10,12 @@ namespace PythonNetStubGenerator
     {
         private static HashSet<DirectoryInfo> SearchPaths { get; } = new HashSet<DirectoryInfo>();
         
-        public static DirectoryInfo BuildAssemblyStubs(DirectoryInfo destPath, FileInfo[] targetAssemblyPaths, DirectoryInfo[] searchPaths = null)
+        public static DirectoryInfo BuildAssemblyStubs(
+            DirectoryInfo destPath,
+            FileInfo[] targetAssemblyPaths,
+            DirectoryInfo[] searchPaths = null,
+            bool forceLf = false
+            )
         {
             // prepare resolver
             AppDomain.CurrentDomain.AssemblyResolve -= AssemblyResolve;
@@ -19,7 +24,7 @@ namespace PythonNetStubGenerator
             // pick a dll and load
             foreach (var targetAssemblyPath in targetAssemblyPaths)
             {
-                var assemblyToStub = Assembly.LoadFrom(targetAssemblyPath.FullName);
+                var assemblyToStub = AssemblyHelper.LoadFromPath(targetAssemblyPath.FullName);
                 SearchPaths.Add(targetAssemblyPath.Directory);
                 
                 if (searchPaths != null)
@@ -59,14 +64,19 @@ namespace PythonNetStubGenerator
                 if (nameSpace == null) break;
 
                 // generate stubs for each type
-                WriteStub(destPath, nameSpace, types);
+                WriteStub(destPath, nameSpace, types, forceLf);
             }
 
 
             return destPath;
         }
 
-        internal static void WriteStub(DirectoryInfo rootDirectory, string nameSpace, IEnumerable<Type> stubTypes)
+        internal static void WriteStub(
+            DirectoryInfo rootDirectory,
+            string nameSpace,
+            IEnumerable<Type> stubTypes,
+            bool forceLf
+            )
         {
             // sort the stub list so we get consistent output over time
             var orderedTypes = stubTypes.OrderBy(it => it.Name);
@@ -80,8 +90,11 @@ namespace PythonNetStubGenerator
 
             PythonTypes.ClearCurrent();
 
-            var stubText = StubWriter.GetStub(nameSpace, orderedTypes);
-
+            var writer = new StubWriter();
+            if (forceLf) {
+                writer.NewLine = "\n";
+            }
+            var stubText = writer.GetStub(nameSpace, orderedTypes);
 
             File.WriteAllText(path, stubText);
         }
@@ -97,7 +110,10 @@ namespace PythonNetStubGenerator
             foreach (var searchPath in SearchPaths)
             {
                 var assemblyPath = Path.Combine(searchPath.FullName, assemblyToResolve);
-                if (File.Exists(assemblyPath)) return Assembly.LoadFrom(assemblyPath);
+                if (File.Exists(assemblyPath))
+                {
+                    return AssemblyHelper.LoadFromPath(assemblyPath);
+                }
             }
 
             return null;

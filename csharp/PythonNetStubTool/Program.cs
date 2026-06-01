@@ -10,10 +10,12 @@ namespace PythonNetStubTool
         /// <param name="destPath">Path to save the subs to.</param>
         /// <param name="searchPaths">Path to search for referenced assemblies</param>
         /// <param name="targetDlls">Target DLLsz</param>
+        /// <param name="forceLf">Force LF line endings for stubs</param>
         static int Main(
             DirectoryInfo destPath,
             string targetDlls,
-            DirectoryInfo[]? searchPaths = null
+            DirectoryInfo[]? searchPaths = null,
+            bool forceLf = false
             )
         {
             if (searchPaths != null)
@@ -39,7 +41,7 @@ namespace PythonNetStubTool
 
             try
             {
-                var dest = StubBuilder.BuildAssemblyStubs(destPath, infos.ToArray(), searchPaths);
+                var dest = StubBuilder.BuildAssemblyStubs(destPath, infos.ToArray(), searchPaths, forceLf);
                 Console.WriteLine($"stubs saved to {dest}");
                 return 0;
             }

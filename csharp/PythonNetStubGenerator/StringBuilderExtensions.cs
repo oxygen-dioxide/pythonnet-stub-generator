@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 
 namespace PythonNetStubGenerator
 {
     
     public static class StringBuilderExtensions
     {
-        public static StringBuilder Indent(this StringBuilder sb)
+        public static TextWriter Indent(this TextWriter tw)
         {
-            for (var i = 0; i < IndentScope.IndentLevel; i++) sb.Append("    ");
-            return sb;
+            for (var i = 0; i < IndentScope.IndentLevel; i++) tw.Write("    ");
+            return tw;
         }
 
         public static string CommaJoin(this IEnumerable<string> strings) => string.Join(", ", strings);
